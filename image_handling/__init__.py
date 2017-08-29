@@ -22,3 +22,4 @@ from image_handling.average_image import median_image_stack
 from image_handling.reference_correction import external_reference
 from image_handling.wavelet_fourier_filter import wf_filter
 from image_handling.resize_image import bin_image
+from image_handling.resize_image import bin_image_stack

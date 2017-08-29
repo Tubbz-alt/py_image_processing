@@ -97,7 +97,7 @@ def bin_image(img, B=1, method='average'):
     return I
 
 
-def bin_pixels_stack(img, bin_size=(1, 1), method='average'):
+def bin_image_stack(img, bin_size=(1, 1), method='average'):
     """
     Bin the image in the horizontal and verticle direction
 
