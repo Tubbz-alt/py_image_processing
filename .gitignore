@@ -1,3 +1,4 @@
 # Files to exclude
 __pycache__
+.spyproject
 
