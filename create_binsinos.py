@@ -9,11 +9,10 @@ Created on Sat Aug 19 15:50:17 2017
 
 
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 
 import sys
-mod_path = r'C:\Users\andykiss\Documents\programming\python\\'
+mod_path = r'C:\Users\andykiss\Documents\programming\python\py_image_processing\\'
 if (mod_path not in sys.path):
     sys.path.append(mod_path)
 import txm_image
@@ -22,11 +21,11 @@ import image_handling
 
 # %% Settings
 # File names and location
-root = r'C:\Users\andykiss\Documents\tmp_work_dir\CAAM\2017Jul\20170723_110810_ATI_powder-processing\bim\imghandled'
+root = r'C:\Users\andykiss\Documents\tmp_work_dir\Sandia\rad1\20170725_134911_rad1-processing\bim'
 ext = '.bim'
 
 # True rotation axis
-rot_axis = 521.7
+rot_axis = 512.6
 
 # Ring removal settings
 flag_ring_removal = True
@@ -35,7 +34,7 @@ wf_N = 6
 wf_sig = 2.0
 
 # Output directory
-outdir = 'sinos\\'
+outdir = 'sinos/'
 
 
 # %% Find the files
@@ -54,7 +53,7 @@ N = len(ls)
 I, meta = txm_image.read_file(root + ls[0], verbose=False)
 row, col = np.shape(I)
 th = np.array([], dtype=np.float32)
-th = np.append(th, meta.th)
+th = np.append(th, meta.MotPos[3])
 
 # Initialize the projection array
 proj = np.empty((N, row, col), dtype=np.float32)
@@ -64,7 +63,7 @@ proj[0, :, :] = I
 for i in range(1, N):
     I, meta = txm_image.read_file(root + ls[i], verbose=False)
     proj[i, :, :] = I
-    th = np.append(th, meta.th)
+    th = np.append(th, meta.MotPos[3])
 
 # Cleanup
 del I
@@ -73,13 +72,13 @@ del I
 # %% Offset the projections
 # rot_axis = np.round(rot_axis)
 shift = (col / 2) - rot_axis
-shift = 2 * np.round(shift)
+shift = int(np.round(2 * shift))
 
-blank_roi = np.zeros((N, row, shift), dtype=np.float32)
+blank_roi = np.zeros((N, row, np.abs(shift)), dtype=np.float32)
 if (shift < 0):
-    proj = np.concatenate((blank_roi, proj), axis=1)
+    proj = np.concatenate((blank_roi, proj), axis=2)
 elif (shift > 0):
-    proj = np.concatenate((proj, blank_roi), axis=1)
+    proj = np.concatenate((proj, blank_roi), axis=2)
 
 # Cleanup
 del blank_roi
@@ -112,9 +111,16 @@ print('done')
 
 
 # %% Export sinograms
+# Make a processing directory if it does not exist
+try:
+    os.stat(root + outdir)
+except:
+    os.mkdir(root + outdir)
+
 for i in range(row):
+    fn = '_%06d.binsino' % (i+1)
     print('Writing sinogram (%04d/%04d)...' % (i+1, row), end='')
-    txm_image.write_file(root+outdir+fn, proj[:, i, :], th)
+    txm_image.write_file(root+outdir+fn, proj[:, i, :].T, th, verbose=False)
     print('done')
 
 
