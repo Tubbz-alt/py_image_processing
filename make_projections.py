@@ -13,11 +13,8 @@ import image_handling
 
 
 # %% User needs to set these parameters
-# fn_scanlog = r'20170724_103450_LENS_1_299_02.log'
-# path = r'C:\Users\andykiss\Documents\tmp_work_dir\CAAM\2017Jul\APC\\'
-
-fn_scanlog = '20170723_110810_ATI_powder.log'
-path = r'C:\Users\andykiss\Documents\tmp_work_dir\CAAM\2017Jul'
+fn_scanlog = '20170725_134911_rad1.log'
+path = r'C:\Users\andykiss\Documents\tmp_work_dir\Sandia\rad1'
 
 
 # Despeckling images
@@ -26,7 +23,7 @@ DS_delta = 500
 DS_rad = 3
 
 # Bin images
-flag_bin = False
+flag_bin = True
 B = 2  # Amount to bin (ex. B = 2 --> 2x2 binning)
 
 # Exposure times
@@ -57,17 +54,17 @@ flag_bim = True
 
 # %% Load scanlog information
 if (path[-1] != '\\' and path[-1] != '/'):
+    # switch to os.sep which will return '\\' or '/'
     path += '/'
 
 LOG = txm_image.microCT_scanlog.read_log(path+fn_scanlog)
 
 # Set folder names
-path_df = LOG.sample_name + '-df_1\\'
-path_ref1 = LOG.sample_name + '-ref_1\\'
-path_ref2 = LOG.sample_name + '-ref_2\\'
-path_proj = LOG.sample_name + '_1\\'
-# path_proj = LOG.sample_name + '-proj\\'
-path_process = LOG.sample_name + '-processing\\'
+path_df = LOG.sample_name + '-df_1/'
+path_ref1 = LOG.sample_name + '-ref_1/'
+path_ref2 = LOG.sample_name + '-ref_2/'
+path_proj = LOG.sample_name + '_1/'
+path_process = LOG.sample_name + '-processing/'
 
 
 # %% Process the dark and flat-fields
@@ -107,7 +104,7 @@ if (LOG.flag_df is True):
         df_avg = image_handling.bin_image(df_avg, B=B, method='average')
 
     # Move to the process directory and write the file
-    os.chdir('..\\'+path_process)
+    os.chdir('../'+path_process)
     if (flag_bim):
         txm_image.write_file('df_avg.bim', df_avg, verbose=False)
     else:
@@ -165,7 +162,7 @@ if (LOG.flag_ref is True):
     ff1_avg = (t_proj / t_ref) * ff1_avg
 
     # Move to the process directory and write the file
-    os.chdir('..\\'+path_process)
+    os.chdir('../'+path_process)
     if (flag_bim):
         txm_image.write_file('ff1_avg.bim', ff1_avg, verbose=False)
     else:
@@ -227,7 +224,7 @@ if (ind_ff < 0):
     ff2_avg = (t_proj / t_ref) * ff2_avg
 
     # Move to the process directory and write the file
-    os.chdir('..\\'+path_process)
+    os.chdir('../'+path_process)
     if (flag_bim):
         txm_image.write_file('ff2_avg.bim', ff2_avg, verbose=False)
     else:
@@ -299,29 +296,15 @@ if (flag_big_memory is True):
 
     # Bin the images
     if (flag_bin):
-        img = image_handling.bin_image(img, B=B, method='average')
+        print('Binning images...', end='')
+        img = image_handling.bin_image_stack(img,
+                                             bin_size=(B, B),
+                                             method='average')
+        print('done')
 
-    # Reference correct the images
-    # Needs to be split between first half and second half
-    print('Applying reference correction...      ', end='')
-    Nh = N_proj // 2
-    # Need to implement this for stacks
-    # img[0:Nh, :, :] = image_handling.external_reference(img[0:Nh, :, :],
-    #                                                     ff1, df)
-    # img[Nh:N, :, :] = image_handling.external_reference(img[Nh:N, :, :],
-    #                                                     ff2, df)
-    for i in range(Nh):
-        print('\b\b\b\b\b\b(%3d%%)' % (100 * i // N_proj), end='')
-        img[i, :, :] = image_handling.external_reference(img[i, :, :], ff1, df)
-        # print('proj %04i' % (i))
-    for i in np.arange(Nh, N_proj):
-        print('\b\b\b\b\b\b(%3d%%)' % (100 * i // N_proj), end='')
-        img[i, :, :] = image_handling.external_reference(img[i, :, :], ff2, df)
-        # print('proj %04i' % (i))
-    print('\b\b\b\b\b\bdone  ')
-
-    # Average multiple exposures before saving files
+    # Average multiple exposures before reference correction
     if (LOG.num_exp > 1):
+        print('Averaging images...', end='')
         N_avg = N_proj // LOG.num_exp
         img_avg = np.zeros((N_avg, LOG.V_RES, LOG.H_RES), dtype=np.float32)
         for i in range(N_avg):
@@ -334,12 +317,25 @@ if (flag_big_memory is True):
                 img_avg[i, :, :] = image_handling.median_image_stack(I)
         img = img_avg
         del img_avg, I
+        print('done')
+
+    # Reference correct the images
+    # Needs to be split between first half and second half
+    print('Applying reference correction...      ', end='')
+    Nh = N_proj // 2
+    for i in range(Nh):
+        print('\b\b\b\b\b\b(%3d%%)' % (100 * i // N_proj), end='')
+        img[i, :, :] = image_handling.external_reference(img[i, :, :], ff1, df)
+    for i in np.arange(Nh, N_proj):
+        print('\b\b\b\b\b\b(%3d%%)' % (100 * i // N_proj), end='')
+        img[i, :, :] = image_handling.external_reference(img[i, :, :], ff2, df)
+    print('\b\b\b\b\b\bdone  ')
 
     # Make the meta data
     # Write the individual bim files
     os.chdir(path + path_process)
     print('Saving files...', end='')
-    txm_image.add_metadata_to_img(LOG, img, outdir='bim\\', flag_Nexp=1, verbose=True)
+    txm_image.add_metadata_to_img(LOG, img, outdir='bim/', flag_Nexp=1, verbose=True)
     print('done')
 else:
     # Find total number of images
@@ -373,7 +369,9 @@ else:
                                                            radius=DS_rad)
             # Bin the images
             if (flag_bin):
-                img = image_handling.bin_image(img, B=B, method='average')
+                img = image_handling.bin_image_stack(img,
+                                                     bin_size=(B, B),
+                                                     method='average')
 
             # Reference correct
             if (ii < Nh):

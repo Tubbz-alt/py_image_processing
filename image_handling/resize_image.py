@@ -95,3 +95,46 @@ def bin_image(img, B=1, method='average'):
 
     # Return the new image
     return I
+
+
+def bin_pixels_stack(img, bin_size=(1, 1), method='average'):
+    """
+    Bin the image in the horizontal and verticle direction
+
+    Parameters
+    ----------
+    img -- NumPy array
+        an array representing the image or an image stack
+    bin_size -- tuple of integers
+        an integer representing the amount of binning in the verticle and
+        horizontal directions
+    method -- string (optional)
+        average -- this will average the pixels when resizing
+        sum -- this will sum the pixels when resizing
+
+    Returns
+    -------
+    proj -- NumPy array
+        returns the binned image(s)
+    """
+
+    if (bin_size == (1, 1)):
+        return img
+
+    if (img.ndim != 3):
+        img = img[np.newaxis]
+
+    (n, m) = bin_size
+    ims = img[:, :img.shape[1] - np.mod(img.shape[1], n),
+                 :img.shape[2] - np.mod(img.shape[2], m)]
+
+    if (method == 'average'):
+        ims = ims.reshape(ims.shape[0], ims.shape[1]//n, n,
+                                        ims.shape[2]//m, m).mean(4).mean(2)
+    elif (method == 'sum'):
+        ims = ims.reshape(ims.shape[0], ims.shape[1]//n, n,
+                                        ims.shape[2]//m, m).sum(4).sum(2)
+    else:
+        print('Method \"' + method + '\" not found.')
+
+    return ims.squeeze()
