@@ -306,7 +306,8 @@ if (flag_big_memory is True):
     if (LOG.num_exp > 1):
         print('Averaging images...', end='')
         N_avg = N_proj // LOG.num_exp
-        img_avg = np.zeros((N_avg, LOG.V_RES, LOG.H_RES), dtype=np.float32)
+        img_avg = np.zeros((N_avg, img.shape[1], img.shape[2]),
+                           dtype=np.float32)
         for i in range(N_avg):
             i_start = i * LOG.num_exp
             i_end = i_start + LOG.num_exp
@@ -322,6 +323,7 @@ if (flag_big_memory is True):
     # Reference correct the images
     # Needs to be split between first half and second half
     print('Applying reference correction...      ', end='')
+    N_proj = img.shape[0]
     Nh = N_proj // 2
     for i in range(Nh):
         print('\b\b\b\b\b\b(%3d%%)' % (100 * i // N_proj), end='')
