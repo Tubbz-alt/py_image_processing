@@ -39,7 +39,7 @@ outdir = 'sinos/'
 
 # %% Find the files
 if (root[-1] != '\\' and root[-1] != '/'):
-    root += '/'
+    root += os.sep
 
 ls = os.listdir(root)
 for fn in ls:
@@ -91,15 +91,15 @@ if (flag_ring_removal):
         # Isolate the sinogram
         sino = proj[:, i, :]
 
-        # Filter the sinogram
-        sino_f = image_handling.wf_filter(sino.T, N_levels=wf_N,
+        # Filter vertical stripes from the sinogram
+        sino_f = image_handling.wf_filter(sino, N_levels=wf_N,
                                           waveletName=wf_str, sigma=wf_sig,
                                           pad=10, forceZero=True)
 
         # Rotate the sinogram and crop to the original size
-        sino_f = sino_f.T
-        sino_size = np.shape(sino)[0]
-        sino_f = sino_f[0:sino_size, :]
+        # sino_f = sino_f.T
+        sino_size = np.shape(sino)
+        sino_f = sino_f[0:sino_size[0], 0:sino_size[1]]
 
         # Replace the projection with the filtered sinogram
         proj[:, i, :] = sino_f
