@@ -14,11 +14,11 @@ from tomo_recon import astra_recon
 
 
 # %% Define the folders
-path = r'C:\Users\andykiss\Documents\tmp_work_dir\CAAM\2017Jul\20170723_110810_ATI_powder-processing\bim\imghandled\croped\sinos\filtered_sinogram'
+path = r'C:\Users\andykiss\Documents\tmp_work_dir\Sandia\rad1\20170725_134911_rad1-processing\bim\sinos'
 ext = '.binsino'
 
 # ASTRA settings
-alg = 'SIRT_CUDA'
+alg = 'FBP_CUDA'
 alg_iter = 100
 px = 1.0
 flag_matlab_crop = True
@@ -26,7 +26,7 @@ flag_matlab_crop = True
 
 # %% Get the files
 if (path[-1] != '\\' and path[-1] != '/'):
-    path += '/'
+    path += os.sep
 
 ls = os.listdir(path)
 for fn in ls:
@@ -38,10 +38,10 @@ N = len(ls)
 
 # %% Start reconstructing
 # Make output directories
-outdir = 'slices\\'
+outdir = 'slices' + os.sep
 if (not os.path.isdir(path + outdir)):
     os.mkdir(path + outdir)
-outdir = outdir + alg + '\\'
+outdir = outdir + alg + os.sep
 if (not os.path.isdir(path + outdir)):
     os.mkdir(path + outdir)
 
@@ -61,5 +61,6 @@ for i in range(N):
 
     print('done')
 
-# %%
+
+# %% Complete
 print('\nBatch reconstruction complete.\n')
