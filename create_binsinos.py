@@ -21,11 +21,11 @@ import image_handling
 
 # %% Settings
 # File names and location
-root = r'C:\Users\andykiss\Documents\tmp_work_dir\Sandia\rad1\20170725_134911_rad1-processing\bim'
+root = r'E:\201707_beamtime\20170727\20170727_170555_Marcellus_t24-processing\bim'
 ext = '.bim'
 
 # True rotation axis
-rot_axis = 512.6
+rot_axis = 472.0
 
 # Ring removal settings
 flag_ring_removal = True
@@ -34,7 +34,7 @@ wf_N = 6
 wf_sig = 2.0
 
 # Output directory
-outdir = 'sinos/'
+outdir = 'sinos' + os.sep
 
 
 # %% Find the files
@@ -72,12 +72,12 @@ del I
 # %% Offset the projections
 # rot_axis = np.round(rot_axis)
 shift = (col / 2) - rot_axis
-shift = int(np.round(2 * shift))
+shift = int(np.round(1 * shift))
 
 blank_roi = np.zeros((N, row, np.abs(shift)), dtype=np.float32)
-if (shift < 0):
+if (shift > 0):
     proj = np.concatenate((blank_roi, proj), axis=2)
-elif (shift > 0):
+elif (shift < 0):
     proj = np.concatenate((proj, blank_roi), axis=2)
 
 # Cleanup
