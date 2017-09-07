@@ -118,7 +118,7 @@ if (LOG.flag_df is True):
     os.chdir('..')
     print('done')
 else:
-    df = np.zeros((LOG.V_RES, LOG.H_RES), dtype=np.float32)
+    df = np.zeros((LOG.V_RES // B, LOG.H_RES // B), dtype=np.float32)
 
 # Return to the root directory
 os.chdir(path)
