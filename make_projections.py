@@ -13,8 +13,8 @@ import image_handling
 
 
 # %% User needs to set these parameters
-fn_scanlog = '20170725_134911_rad1.log'
-path = r'C:\Users\andykiss\Documents\tmp_work_dir\Sandia\rad1'
+fn_scanlog = '20170727_170555_Marcellus_t24.log'
+path = r'E:\201707_beamtime\20170727'
 
 
 # Despeckling images
